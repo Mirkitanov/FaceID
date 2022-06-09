@@ -1,5 +1,6 @@
 
 import UIKit
+import LocalAuthentication
 
 class LogInViewController: UIViewController {
     
@@ -17,7 +18,23 @@ class LogInViewController: UIViewController {
     
     private let wrapperView = UIView()
     
-    
+    private var authButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("Auth with FaceID", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.setTitleColor(.darkGray, for: .selected)
+        button.setTitleColor(.darkGray, for: .highlighted)
+        button.setBackgroundImage(#imageLiteral(resourceName: "blue_pixel"), for: .normal)
+        button.setBackgroundImage(#imageLiteral(resourceName: "blue_pixel").alpha(0.8), for: .disabled)
+        button.setBackgroundImage(#imageLiteral(resourceName: "blue_pixel").alpha(0.8), for: .selected)
+        button.setBackgroundImage(#imageLiteral(resourceName: "blue_pixel").alpha(0.8), for: .highlighted)
+        button.layer.cornerRadius = 10
+        button.layer.masksToBounds = true
+        button.addTarget(self, action: #selector(auth), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
@@ -71,8 +88,8 @@ class LogInViewController: UIViewController {
                                 emailOrPhoneTextField,
                                 passwordTextField,
                                 logInButton,
-                                longLine
-        )
+                                longLine,
+                                authButton)
         
         let constraints = [
             logInScrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -105,7 +122,16 @@ class LogInViewController: UIViewController {
             longLine.topAnchor.constraint(equalTo: bigFieldForTwoTextFieldsImageView.topAnchor, constant: 49.75),
             longLine.leadingAnchor.constraint(equalTo: bigFieldForTwoTextFieldsImageView.leadingAnchor),
             longLine.trailingAnchor.constraint(equalTo: bigFieldForTwoTextFieldsImageView.trailingAnchor),
-            longLine.bottomAnchor.constraint(equalTo: bigFieldForTwoTextFieldsImageView.bottomAnchor, constant: -49.75)
+            longLine.bottomAnchor.constraint(equalTo: bigFieldForTwoTextFieldsImageView.bottomAnchor, constant: -49.75),
+            
+            logInButton.topAnchor.constraint(equalTo: bigFieldForTwoTextFieldsImageView.bottomAnchor, constant: 50),
+            logInButton.leadingAnchor.constraint(equalTo: bigFieldForTwoTextFieldsImageView.leadingAnchor),
+            logInButton.trailingAnchor.constraint(equalTo: bigFieldForTwoTextFieldsImageView.trailingAnchor),
+            
+            authButton.topAnchor.constraint(equalTo: logInButton.bottomAnchor, constant: 20),
+            authButton.trailingAnchor.constraint(equalTo: logInButton.trailingAnchor),
+            authButton.leadingAnchor.constraint(equalTo: logInButton.leadingAnchor),
+            authButton.heightAnchor.constraint(equalToConstant: 50)
             ]
         
         NSLayoutConstraint.activate(constraints)
@@ -134,6 +160,20 @@ class LogInViewController: UIViewController {
             logInScrollView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardSize.height, right: 0)
         }
     }
+    
+    @objc func auth() {
+        LocalAuthorizationService.shared.authorizeIfPossible { [self] value in
+            if value {
+                let postsViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "PostsViewController")
+                navigationController?.pushViewController(postsViewController, animated: true)
+            } else {
+                let alert = UIAlertController(title: "Biometric is not available", message: "Use your keyboard to enter password", preferredStyle: .actionSheet)
+                let cancel = UIAlertAction(title: "Dismiss", style: .cancel, handler: nil)
+                alert.addAction(cancel)
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
 
     @objc fileprivate func keyboardWillHide(notification: NSNotification) {
         logInScrollView.contentInset.bottom = .zero
@@ -141,11 +181,9 @@ class LogInViewController: UIViewController {
     }
     
     @objc private func logInButtonPressed() {
-        
         let postsViewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(identifier: "PostsViewController")
         navigationController?.pushViewController(postsViewController, animated: true)
     }
-    
 }
 
     extension UIImage {

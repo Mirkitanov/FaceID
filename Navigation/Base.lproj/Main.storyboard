@@ -33,6 +33,7 @@
                                         <constraints>
                                             <constraint firstAttribute="height" constant="50" id="0mS-FZ-3e9"/>
                                         </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="18"/>
                                         <state key="normal" title="Button">
                                             <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         </state>
